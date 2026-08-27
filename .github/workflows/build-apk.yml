@@ -26,14 +26,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Download V0.5 source archive
+      - name: Verify and extract V0.5 sources
         run: |
-          curl -fL --retry 3 -o /tmp/poker-analyzer-v0.5.zip https://raw.githubusercontent.com/rugbymanthonon-eng/Repos/main/poker-analyzer-v0.5.zip
-          unzip -t /tmp/poker-analyzer-v0.5.zip
+          unzip -t source/poker-analyzer-v0.5.zip
           rm -rf app-src
           mkdir app-src
-          unzip -q /tmp/poker-analyzer-v0.5.zip -d app-src
-          echo "APP_DIR=$(find app-src -name package.json -printf '%h\n' | head -n 1)" >> "$GITHUB_ENV"
+          unzip -q source/poker-analyzer-v0.5.zip -d app-src
+          APP_DIR=$(find app-src -name package.json -printf '%h\n' | head -n 1)
+          test -n "$APP_DIR"
+          echo "APP_DIR=$APP_DIR" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: npm install
