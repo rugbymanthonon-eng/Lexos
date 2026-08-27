@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Lexos Poker Analyzer",
+    "slug": "lexos-poker-analyzer",
+    "version": "0.5.1",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.lexos.pokeranalyzer",
+      "versionCode": 5,
+      "permissions": ["CAMERA"]
+    },
+    "plugins": [
+      ["expo-camera", {"cameraPermission": "Autoriser Lexos à utiliser la caméra pour lire l'écran du jeu fictif."}]
+    ]
+  }
+}
