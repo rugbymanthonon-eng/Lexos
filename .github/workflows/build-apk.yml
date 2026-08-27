@@ -1,72 +1,45 @@
 name: Build Lexos APK
-
 on:
   workflow_dispatch:
   push:
     branches: [main]
-
 permissions:
   contents: write
-
 jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Lexos
+      - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Verify and extract V0.5 sources
-        run: |
-          unzip -t source/poker-analyzer-v0.5.zip
-          rm -rf app-src
-          mkdir app-src
-          unzip -q source/poker-analyzer-v0.5.zip -d app-src
-          APP_DIR=$(find app-src -name package.json -printf '%h\n' | head -n 1)
-          test -n "$APP_DIR"
-          echo "APP_DIR=$APP_DIR" >> "$GITHUB_ENV"
-
       - name: Install dependencies
         run: npm install
-        working-directory: ${{ env.APP_DIR }}
-
-      - name: Logic tests
+      - name: Source checks
         run: npm run test:logic
-        working-directory: ${{ env.APP_DIR }}
-
       - name: Generate Android project
         run: npx expo prebuild --platform android --non-interactive
-        working-directory: ${{ env.APP_DIR }}
-
       - name: Build APK
-        run: ./gradlew assembleDebug --no-daemon
-        working-directory: ${{ env.APP_DIR }}/android
-
+        run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
       - name: Prepare APK
         run: |
           mkdir -p dist
-          cp "$APP_DIR/android/app/build/outputs/apk/debug/app-debug.apk" dist/Lexos-Poker-Analyzer-v0.5.apk
-
-      - name: Upload APK artifact
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/Lexos-Poker-Analyzer-v0.5.1.apk
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Lexos-Poker-Analyzer-v0.5
-          path: dist/Lexos-Poker-Analyzer-v0.5.apk
-          if-no-files-found: error
-
-      - name: Publish downloadable APK release
+          name: Lexos-Poker-Analyzer-v0.5.1
+          path: dist/Lexos-Poker-Analyzer-v0.5.1.apk
+      - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete v0.5 --cleanup-tag -y || true
-          gh release create v0.5 dist/Lexos-Poker-Analyzer-v0.5.apk --title "Lexos Poker Analyzer V0.5" --notes "APK Android V0.5 pour test sur téléphone."
+          gh release delete v0.5.1 --cleanup-tag -y || true
+          gh release create v0.5.1 dist/Lexos-Poker-Analyzer-v0.5.1.apk --title "Lexos Poker Analyzer V0.5.1" --notes "APK Android de test. Caméra + saisie de contrôle + moteur exact post-flop."
